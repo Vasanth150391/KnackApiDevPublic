@@ -123,7 +123,8 @@ namespace Knack.API.DataManagers
 
             for (int i = 0; i < passwordLength; i++)
             {
-                chars[i] = allowedChars[rd.Next(0, allowedChars.Length)];
+                //chars[i] = allowedChars[rd.Next(0, allowedChars.Length)];
+                chars[i] = allowedChars[RandomNumberGenerator.GetInt32(allowedChars.Length)];
             }
 
             return new string(chars);

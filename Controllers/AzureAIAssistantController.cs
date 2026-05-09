@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Knack.API.Models;
 using Knack.API.Interfaces;
 using Knack.API.AzureAI;
+using System.Text.RegularExpressions;
 
 namespace Knack.API.Controllers
 {
@@ -65,6 +66,11 @@ namespace Knack.API.Controllers
         {
             try
             {
+                if (request == null || string.IsNullOrWhiteSpace(request.SqlQuery))
+                    return BadRequest("SQL query is required.");
+
+                if (!IsSafeReadOnlySqlQuery(request.SqlQuery))
+                    return BadRequest("Only single-statement read-only SELECT queries are allowed.");
                 var result = await _sqlQueryOrchestrator.ExecuteQueryAsync(request.SqlQuery);
                 return Ok(new { Result = result });
             }
@@ -74,7 +80,28 @@ namespace Knack.API.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, "An error occurred while executing the SQL query.");
             }
         }
+        private static bool IsSafeReadOnlySqlQuery(string sqlQuery)
+        {
+            var normalized = sqlQuery.Trim();
 
+            if (!(Regex.IsMatch(normalized, @"^\s*select\b", RegexOptions.IgnoreCase) ||
+                  Regex.IsMatch(normalized, @"^\s*with\b[\s\S]*\bselect\b", RegexOptions.IgnoreCase)))
+                return false;
+
+            if (normalized.Contains(";"))
+                return false;
+
+            if (Regex.IsMatch(normalized, @"(--|/\*|\*/)", RegexOptions.IgnoreCase))
+                return false;
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\b(insert|update|delete|merge|drop|alter|create|truncate|exec|execute|grant|revoke|deny)\b",
+                RegexOptions.IgnoreCase))
+                return false;
+
+            return true;
+        }
         [HttpPost]
         [Route("ProcessUserPrompt")]
         public async Task<IActionResult> GenerateSqlQuery([FromBody] AIRequest request)

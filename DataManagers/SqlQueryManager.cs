@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using System.Data;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Knack.API.DataManagers
 {
@@ -19,26 +20,28 @@ namespace Knack.API.DataManagers
         {
             try
             {
+                if (!IsSafeReadOnlySqlQuery(sqlQuery))                
+                    throw new InvalidOperationException("Only single-statement read-only SELECT queries are allowed.");
+                    
+                using var command = _context.Database.GetDbConnection().CreateCommand();
+                command.CommandText = sqlQuery;
+                command.CommandType = CommandType.Text;
 
-            using var command = _context.Database.GetDbConnection().CreateCommand();
-            command.CommandText = sqlQuery;
-            command.CommandType = CommandType.Text;
+                if (command.Connection.State != ConnectionState.Open)
+                     await command.Connection.OpenAsync();
 
-            if (command.Connection.State != ConnectionState.Open)
-                await command.Connection.OpenAsync();
-
-            using var reader = await command.ExecuteReaderAsync();
-            var results = new List<Dictionary<string, object>>();
-            while (await reader.ReadAsync())
-            {
-                var row = new Dictionary<string, object>();
-                for (int i = 0; i < reader.FieldCount; i++)
+                using var reader = await command.ExecuteReaderAsync();
+                var results = new List<Dictionary<string, object>>();
+                while (await reader.ReadAsync())
                 {
-                    row[reader.GetName(i)] = reader.GetValue(i);
+                    var row = new Dictionary<string, object>();
+                    for (int i = 0; i < reader.FieldCount; i++)
+                    {
+                         row[reader.GetName(i)] = reader.GetValue(i);
+                    }
+                    results.Add(row);
                 }
-                results.Add(row);
-            }
-            return results;
+                return results;                                    
 
             }
             catch (Exception ex)
@@ -47,7 +50,31 @@ namespace Knack.API.DataManagers
                 throw ex;
             }
         }
+        private static bool IsSafeReadOnlySqlQuery(string sqlQuery)
+        {
+            if (string.IsNullOrWhiteSpace(sqlQuery))
+                return false;
 
+            var normalized = sqlQuery.Trim();
+
+            if (!(Regex.IsMatch(normalized, @"^\s*select\b", RegexOptions.IgnoreCase) ||
+                  Regex.IsMatch(normalized, @"^\s*with\b[\s\S]*\bselect\b", RegexOptions.IgnoreCase)))
+                return false;
+
+            if (normalized.Contains(";"))
+                return false;
+
+            if (Regex.IsMatch(normalized, @"(--|/\*|\*/)", RegexOptions.IgnoreCase))
+                return false;
+
+            if (Regex.IsMatch(
+                normalized,
+                @"\b(insert|update|delete|merge|drop|alter|create|truncate|exec|execute|grant|revoke|deny)\b",
+                RegexOptions.IgnoreCase))
+                return false;
+
+            return true;
+        }
         public async Task<string> GetSchemaAsync()
         {
             try
