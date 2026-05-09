@@ -172,10 +172,10 @@ namespace Knack.API.Common
 
             try
             {
-                System.Diagnostics.Trace.WriteLine($"EmailAddress {emailAddress},Email Subject: {subject}, Email Body: {body}");                
+                //System.Diagnostics.Trace.WriteLine($"EmailAddress {emailAddress},Email Subject: {subject}, Email Body: {body}");                
                 // Send email
                 smtpClient.Send(message);
-                System.Diagnostics.Trace.WriteLine($"Email sent successfully.");
+                //System.Diagnostics.Trace.WriteLine($"Email sent successfully.");
                 Console.WriteLine("Email sent successfully.");
             }
             catch (Exception ex)
