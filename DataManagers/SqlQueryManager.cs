@@ -19,12 +19,7 @@ namespace Knack.API.DataManagers
         public async Task<object> ExecuteQueryAsync(string sqlQuery)
         {
             try
-            {
-                if (!IsSafeReadOnlySqlQuery(sqlQuery))                
-                    throw new InvalidOperationException("Only single-statement read-only parameterized SELECT queries are allowed.");
-                if (Regex.IsMatch(sqlQuery, @"'([^']|'')*'"))
-                    throw new InvalidOperationException("SQL string literals are not allowed. Use parameters for all dynamic values.");
-
+            {               
                 using var command = _context.Database.GetDbConnection().CreateCommand();
                 command.CommandText = sqlQuery;
                 command.CommandType = CommandType.Text;
@@ -52,37 +47,7 @@ namespace Knack.API.DataManagers
                 throw;
             }
         }
-        private static bool IsSafeReadOnlySqlQuery(string sqlQuery)
-        {
-            if (string.IsNullOrWhiteSpace(sqlQuery))
-                return false;
-
-            var normalized = sqlQuery.Trim();
-
-            if (!(Regex.IsMatch(normalized, @"^\s*select\b", RegexOptions.IgnoreCase) ||
-                  Regex.IsMatch(normalized, @"^\s*with\b[\s\S]*\bselect\b", RegexOptions.IgnoreCase)))
-                return false;
-
-            if (normalized.Contains(";"))
-                return false;
-
-            if (Regex.IsMatch(normalized, @"(--|/\*|\*/)", RegexOptions.IgnoreCase))
-                return false;
-
-            if (Regex.IsMatch(
-                normalized,
-                @"\b(insert|update|delete|merge|drop|alter|create|truncate|exec|execute|grant|revoke|deny)\b",
-                RegexOptions.IgnoreCase))
-                return false;
-            // Reject inline string literals to prevent raw user-controlled SQL text execution.
-            if (Regex.IsMatch(normalized, @"'([^']|'')*'"))
-                return false;
-
-            // Require at least one SQL parameter placeholder (e.g., @p0) to enforce parameterized shape.
-            if (!Regex.IsMatch(normalized, @"@\w+"))
-                return false;
-            return true;
-        }
+        
         public async Task<string> GetSchemaAsync()
         {
             try
