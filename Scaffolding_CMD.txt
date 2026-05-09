@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "Data Source=mssql-165504-0.cloudclusters.net,19998;user id=bala; password=Admin123; database=knack; TrustServerCertificate=true;" Microsoft.EntityFrameworkCore.SqlServer -outputdir DataAccess/Models -Tables leaddetails

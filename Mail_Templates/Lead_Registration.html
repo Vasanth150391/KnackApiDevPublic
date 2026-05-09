@@ -1,0 +1,87 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Welcome to Knack</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            background: #ffffff;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .content {
+            padding: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .button {
+            display: inline-block;
+            background: #007bff;
+            color: #ffffff;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Welcome to Knack!</div>
+        <div class="content">
+            <p>Dear <strong>#firstName# #lastName#</strong>,</p>
+            <p>Thank you for joining us! We are excited to have you on board.</p>
+            <p>Here are your login details:</p>
+            <p><strong>Username:</strong> #userName#</p>
+            <p><strong>Password:</strong> #password#</p>
+            <p>Please click the button below to log in and change your password:</p>
+            <p style="text-align: center;">
+                <a href="#loginUrl#" class="button" style="color:#fff;">Login to Your Account</a>
+            </p>
+            <br />
+            <p>If you need to access via python please use below host name and attached pdf document for your reference.</p>
+            <p><strong>Host Name:</strong> https://kcl-38vsf7krdd2zer9wrymqj2rggo.softwareng.cloud</p>
+            <p>If you have any questions, feel free to reach out to our support team.</p>
+            <p>
+                Best Regards,<br>
+                <strong>Knack</strong>
+            </p>
+        </div>
+        <div class="footer">
+            &copy; 2025 Knack. All rights reserved.
+        </div>
+    </div>
+   
+</body>
+</html>
