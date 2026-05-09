@@ -21,7 +21,7 @@ namespace Knack.API.DataManagers
             try
             {
                 if (!IsSafeReadOnlySqlQuery(sqlQuery))                
-                    throw new InvalidOperationException("Only single-statement read-only SELECT queries are allowed.");
+                    throw new InvalidOperationException("Only single-statement read-only parameterized SELECT queries are allowed.");
                     
                 using var command = _context.Database.GetDbConnection().CreateCommand();
                 command.CommandText = sqlQuery;
@@ -72,7 +72,13 @@ namespace Knack.API.DataManagers
                 @"\b(insert|update|delete|merge|drop|alter|create|truncate|exec|execute|grant|revoke|deny)\b",
                 RegexOptions.IgnoreCase))
                 return false;
+            // Reject inline string literals to prevent raw user-controlled SQL text execution.
+            if (Regex.IsMatch(normalized, @"'([^']|'')*'"))
+                return false;
 
+            // Require at least one SQL parameter placeholder (e.g., @p0) to enforce parameterized shape.
+            if (!Regex.IsMatch(normalized, @"@\w+"))
+                return false;
             return true;
         }
         public async Task<string> GetSchemaAsync()
