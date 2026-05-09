@@ -22,7 +22,9 @@ namespace Knack.API.DataManagers
             {
                 if (!IsSafeReadOnlySqlQuery(sqlQuery))                
                     throw new InvalidOperationException("Only single-statement read-only parameterized SELECT queries are allowed.");
-                    
+                if (Regex.IsMatch(sqlQuery, @"'([^']|'')*'"))
+                    throw new InvalidOperationException("SQL string literals are not allowed. Use parameters for all dynamic values.");
+
                 using var command = _context.Database.GetDbConnection().CreateCommand();
                 command.CommandText = sqlQuery;
                 command.CommandType = CommandType.Text;
@@ -47,7 +49,7 @@ namespace Knack.API.DataManagers
             catch (Exception ex)
             {
 
-                throw ex;
+                throw;
             }
         }
         private static bool IsSafeReadOnlySqlQuery(string sqlQuery)
