@@ -228,7 +228,7 @@ namespace Knack.API.Common
 
             try
             {
-                System.Diagnostics.Trace.WriteLine($"EmailAddress {emailAddress},Email Subject: {subject}, Email Body: {body}");
+                System.Diagnostics.Trace.WriteLine($"Sending email. Subject: {subject}, Attachment: {attachment}, BodyLength: {(body == null ? 0 : body.Length)}");
                 // Send email
                 smtpClient.Send(message);
                 System.Diagnostics.Trace.WriteLine($"Email sent successfully.");
