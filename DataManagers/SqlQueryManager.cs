@@ -43,7 +43,6 @@ namespace Knack.API.DataManagers
             }
             catch (Exception ex)
             {
-
                 throw;
             }
         }
